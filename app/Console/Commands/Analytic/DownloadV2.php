@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands\Analytic;
 
+use App\Area;
+use App\Exports\Nar\AnalyticExport;
 use App\Exports\Nar\AnalyticExportWeekly;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
@@ -16,7 +18,7 @@ class DownloadV2 extends Command
      *
      * @var string
      */
-    protected $signature = 'analytic:downloadV2';
+    protected $signature = 'analytic:downloadV2 {--prov=}';
 
     /**
      * The description of the command.
@@ -32,13 +34,14 @@ class DownloadV2 extends Command
      */
     public function handle()
     {
+        $prov = @$this->option('prov');
         $this->info("Menjalankan Download Analisa Minggguan NAR - ".now()->format('Y-m-d H:i:s'));
         $current_date = Carbon::now();
         $path = "download/".$current_date->format('Y-m-d').'/nar';
         if(!File::exists($path)) {
             File::makeDirectory($path, 0755, true, true);
         }
-        Excel::store(new AnalyticExportWeekly,$path."/analytic_weekly_v2.xlsx");
+        Excel::store(new AnalyticExportWeekly($prov),$path."/analytic_weekly_v2.xlsx");
 
         $this->info("Berhasil Melakukan Download Analisa Minggguan NAR - ".now()->format('Y-m-d H:i:s'));
     }

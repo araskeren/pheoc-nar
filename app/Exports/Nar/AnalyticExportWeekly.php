@@ -5,18 +5,36 @@ namespace App\Exports\Nar;
 use App\Area;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AnalyticExportWeekly implements WithMultipleSheets
 {
+    protected $provName;
+
+    /**
+     * AnalyticExportWeekly constructor.
+     * @param $provName
+     */
+    public function __construct(String $provName = null)
+    {
+        $this->provName = $provName;
+    }
+
+
     public function sheets(): array
     {
-//        $provId = 1000064;
-//        $provName = 'KALIMANTAN TIMUR';
         $sheet = [];
-        $listProv = Area::whereIn('id',[1000064,1000014,1000019])->get();
-        foreach($listProv as $prov){
-            $sheet[] = new AnalyticSheetDaily($prov->name,$prov->id,'DAILY '.$prov->name);
-            $sheet[] = new AnalyticSheetWeekly($prov->name,$prov->id,'WEEKLY '.$prov->name);
+        $prov = $this->provName;
+        if($prov){
+            $area = Area::select('id','name')->where(["name"=>$prov,"level"=>1])->first();
+            $sheet[] = new AnalyticSheetDaily($area->name,$area->id,'DAILY '.$area->name);
+            $sheet[] = new AnalyticSheetWeekly($area->name,$area->id,'WEEKLY '.$area->name);
+        }else{
+            $area = Area::select('id','name')->where("level",1)->get();
+            foreach($area as $i){
+                $sheet[] = new AnalyticSheetDaily($i->name,$i->id,'DAILY '.$i->name);
+                $sheet[] = new AnalyticSheetWeekly($i->name,$i->id,'WEEKLY '.$i->name);
+            }
         }
 
         return $sheet;

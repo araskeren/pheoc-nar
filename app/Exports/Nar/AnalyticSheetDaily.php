@@ -29,7 +29,7 @@ class AnalyticSheetDaily implements FromView,WithTitle
     public function view(): \Illuminate\Contracts\View\View
     {
         $listDate = $this->getListDate('2021-01-03');
-        $data = $this->getData($this->provName,$this->provId,'2021-01-03');
+        $data = $this->getData($this->provName,$this->provId);
 //        dd($data[0]);
         $kabKota = Area::getDistrict($this->provId)->select("id",'name')->get();
         return view('exports.nar.analytic_daily', [
@@ -57,7 +57,7 @@ class AnalyticSheetDaily implements FromView,WithTitle
         ");
     }
 
-    private function getData($provName = "JAWA TENGAH",$provId = 32676,$date = '2020-03-04')
+    private function getData($provName = "JAWA TENGAH",$provId = 32676,$date = '2020-03-01')
     {
         return DB::select("
             with recursive

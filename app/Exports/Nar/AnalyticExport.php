@@ -8,10 +8,25 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class AnalyticExport implements WithMultipleSheets
 {
+    protected $provId;
+    protected $provName;
+
+    /**
+     * AnalyticExport constructor.
+     * @param $provId
+     * @param $provName
+     */
+    public function __construct(int $provId,String $provName)
+    {
+        $this->provId = $provId;
+        $this->provName = $provName;
+    }
+
+
     public function sheets(): array
     {
-        $provId = 1000036;
-        $provName = 'BANTEN';
+        $provId = $this->provId;
+        $provName = $this->provName;
         $area = Area::getDistrict($provId)->select("id",'name')->get();
         $sheet = [];
         $data = $this->getData($provName,$provId);
