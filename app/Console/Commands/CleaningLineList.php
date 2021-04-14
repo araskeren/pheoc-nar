@@ -39,6 +39,26 @@ class CleaningLineList extends Command
     public function handle()
     {
         $this->info("Menjalankan Cleaning Line List - ".now()->format('Y-m-d H:i:s'));
+
+        $this->info("");
+        $this->info("Cleaning Tanggal Lapor");
+        $lapor = DB::table("line_list_nar")->select("id","tanggal_lapor")->whereRaw('length(tanggal_lapor) < 10 and tanggal_lapor != "0/0/0"')->get();
+        $this->output->progressStart($lapor->count());
+        foreach ($lapor as $i){
+            $split = explode("/",$i->tanggal_lapor);
+            $date = (int) $split[0];
+            $date = ($date<=9)?"0".$date:$date;
+            $month = (int) $split[1];
+            $month = ($month<=9)?"0".$month:$month;
+            $year = $split[2];
+            $tanggalLapor = $date."/".$month."/".$year;
+            DB::table('line_list_nar')->where('id', $i->id)
+                ->update(['tanggal_lapor' => $tanggalLapor]);
+            $this->output->progressAdvance();
+        }
+        $this->output->progressFinish();
+        $this->info("End Cleaning Tanggal Lapor");
+
         $meninggal = DB::table("line_list_nar")->select("id","tanggal_meninggal")->whereRaw('length(tanggal_meninggal) < 10 and tanggal_meninggal != "0/0/0"')->get();
 
         $this->info("");
