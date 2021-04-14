@@ -37,9 +37,6 @@ class DownloadV1 extends Command
         $this->info("Menjalankan Download Analisa Minggguan NAR - ".now()->format('Y-m-d H:i:s'));
         $current_date = Carbon::now();
         $path = "download/".$current_date->format('Y-m-d').'/nar';
-        if(!File::exists($path)) {
-            File::makeDirectory($path, 0755, true, true);
-        }
         if($prov){
             $area = Area::select('id','name')->where(["name"=>$prov,"level"=>1])->first();
             Excel::store(new AnalyticExport($area->id,$area->name),$path."/analytic_weekly_v1_".$area->name.".xlsx");

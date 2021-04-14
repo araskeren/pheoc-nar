@@ -38,9 +38,6 @@ class DownloadV2 extends Command
         $this->info("Menjalankan Download Analisa Minggguan NAR - ".now()->format('Y-m-d H:i:s'));
         $current_date = Carbon::now();
         $path = "download/".$current_date->format('Y-m-d').'/nar';
-        if(!File::exists($path)) {
-            File::makeDirectory($path, 0755, true, true);
-        }
         Excel::store(new AnalyticExportWeekly($prov),$path."/analytic_weekly_v2.xlsx");
 
         $this->info("Berhasil Melakukan Download Analisa Minggguan NAR - ".now()->format('Y-m-d H:i:s'));
