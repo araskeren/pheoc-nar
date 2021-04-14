@@ -2,12 +2,9 @@
 
 namespace App\Console\Commands\Analytic;
 
-use App\Area;
-use App\Exports\Nar\AnalyticExport;
 use App\Exports\Nar\AnalyticExportWeekly;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\File;
 use Illuminate\Console\Command;
 use Maatwebsite\Excel\Facades\Excel;
 

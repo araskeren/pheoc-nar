@@ -6,7 +6,6 @@ use App\Area;
 use App\Exports\Nar\AnalyticExport;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Console\Command;
 
