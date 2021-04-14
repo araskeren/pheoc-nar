@@ -27,7 +27,25 @@
     </thead>
     <tbody>
     @foreach($listDate as $date)
-        @if($date->tanggal >= '2021-01-01')
+        @if($date->tanggal == '2020-12-31')
+            <tr>
+                <td>Komulatif 2020</td>
+                @for($i = 0;$i<count($kabKota);$i++)
+                    @foreach($datas as $data)
+                        @if($kabKota[$i]->name == $data->kabupaten and $data->tanggal == $date->tanggal)
+                            <td>0</td>
+                            <td>{{$data->total_konfirm_kumulatif}}</td>
+                            <td>0</td>
+                            <td>{{$data->total_sembuh_kumulatif}}</td>
+                            <td>0</td>
+                            <td>{{$data->total_meninggal_kumulatif}}</td>
+                            <td></td>
+                            <td></td>
+                        @endif
+                    @endforeach
+                @endfor
+            </tr>
+        @elseif($date->tanggal >= '2021-01-01')
             <tr>
                 <td>{{\Carbon\Carbon::parse($date->tanggal)->format("d/m/Y")}}</td>
                 @for($i = 0;$i<count($kabKota);$i++)

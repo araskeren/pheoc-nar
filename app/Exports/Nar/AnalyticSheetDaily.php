@@ -28,7 +28,7 @@ class AnalyticSheetDaily implements FromView,WithTitle
 
     public function view(): \Illuminate\Contracts\View\View
     {
-        $listDate = $this->getListDate('2021-01-03');
+        $listDate = $this->getListDate('2020-12-31');
         $data = $this->getData($this->provName,$this->provId);
 //        dd($data[0]);
         $kabKota = Area::getDistrict($this->provId)->select("id",'name')->get();
@@ -47,7 +47,7 @@ class AnalyticSheetDaily implements FromView,WithTitle
         return DB::select("
             with recursive
             cte_list_date as (
-                select CAST('".$date."' as DATE) as tanggal,week(CAST('2021-01-03' as DATE)) as bulan_minggu
+                select CAST('".$date."' as DATE) as tanggal,week(CAST('".$date."' as DATE)) as bulan_minggu
                 union all
                 select CAST(tanggal + interval 1 day as DATE),week(CAST(tanggal + interval 1 day as DATE)) as bulan_minggu
                 from cte_list_date
