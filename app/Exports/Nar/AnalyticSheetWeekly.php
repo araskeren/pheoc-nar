@@ -29,7 +29,7 @@ class AnalyticSheetWeekly implements FromView,WithTitle
     public function view(): \Illuminate\Contracts\View\View
     {
         $listDate = $this->getListDate();
-        $data = $this->getData($this->provName,$this->provId,'2021-01-03');
+        $data = $this->getData($this->provName,$this->provId,'2020-02-01');
         $kabKota = Area::getDistrict($this->provId)->select("id",'name')->get();
         return view('exports.nar.analytic_weekly', [
             'datas' => $data,'kabKota' => $kabKota,'listDate' => $listDate
@@ -72,11 +72,17 @@ class AnalyticSheetWeekly implements FromView,WithTitle
                 from cte_list_date
                 where tanggal < (select max(tanggal_lapor) from line_list_nar)
             ),
+            cte_list_date_week as (
+                select
+                    tanggal,
+                    if(year(tanggal) = '2021',52+bulan_minggu,bulan_minggu) as bulan_minggu
+                from cte_list_date
+            ),
             cte_list_date_weekly as (
                 select *,
-                   min(tanggal) over (partition by bulan_minggu) as awal,
-                   max(tanggal) over (partition by bulan_minggu) as akhir
-                from cte_list_date
+                       min(tanggal) over (partition by bulan_minggu) as awal,
+                       max(tanggal) over (partition by bulan_minggu) as akhir
+                from cte_list_date_week
             ),
             kab as (
                 select id,parent_id,name,kdc
@@ -87,24 +93,24 @@ class AnalyticSheetWeekly implements FromView,WithTitle
             cte_kab_date as (
                 select *
                 from kab
-                         cross join cte_list_date
+                cross join cte_list_date
             ),
             cte_konfirmasi_harian as (
                 select tanggal_lapor, kabupaten, count(*) as total_konfirm_harian
                 from line_list_nar
-                where tanggal_lapor <> '2000-00-00' and tanggal_lapor >= '".$date."'
+                where tanggal_lapor <> '2000-00-00' and propinsi = '".$provName."'
                 group by tanggal_lapor, kabupaten
             ),
             cte_sembuh_harian as (
                 select tanggal_sembuh, kabupaten, count(*) as total_sembuh_harian
                 from line_list_nar
-                where tanggal_sembuh <> '2000-00-00' and tanggal_lapor >= '".$date."'
+                where tanggal_sembuh <> '2000-00-00' and propinsi = '".$provName."'
                 group by tanggal_sembuh, kabupaten
             ),
             cte_meninggal_harian as (
                 select tanggal_meninggal, kabupaten, count(*) as total_meninggal_harian
                 from line_list_nar
-                where tanggal_meninggal <> '2000-00-00' and tanggal_lapor >= '".$date."'
+                where tanggal_meninggal <> '2000-00-00' and propinsi = '".$provName."'
                 group by tanggal_meninggal, kabupaten
             ),
             cte_test_harian as (
@@ -118,7 +124,7 @@ class AnalyticSheetWeekly implements FromView,WithTitle
                        sum(jml_spesimen_negatif)  as total_test_negatif
                 from analytic_spesiment_nar
                 where faskes_propnm = '".$provName."'
-                  and faskes_kabnm is not null and tgl >= '".$date."'
+                  and faskes_kabnm is not null
                 group by tgl, faskes_kabnm
             ),
             cte_test_komulatif as (
@@ -135,12 +141,6 @@ class AnalyticSheetWeekly implements FromView,WithTitle
                        coalesce(total_sembuh_harian, 0)                    as total_sembuh_harian,
                        coalesce(total_meninggal_harian, 0)                 as total_meninggal_harian,
                        coalesce(total_test_negatif, 0)                     as total_test_negatif,
-                       sum(coalesce(total_konfirm_harian, 0))
-                           over (partition by kd.name order by kd.tanggal) as total_konfirm_kumulatif,
-                       sum(coalesce(total_sembuh_harian, 0))
-                           over (partition by kd.name order by kd.tanggal) as total_sembuh_kumulatif,
-                       sum(coalesce(total_meninggal_harian, 0))
-                           over (partition by kd.name order by kd.tanggal) as total_meninggal_kumulatif,
                        sum(coalesce(total_test_negatif, 0))
                            over (partition by kd.name order by kd.tanggal) as total_test_negatif_kumulatif
                 from cte_kab_date kd
@@ -157,23 +157,37 @@ class AnalyticSheetWeekly implements FromView,WithTitle
                                    on tk.tgl = kd.tanggal and
                                       tk.faskes_kabnm = kd.name
                 order by kd.name, kd.tanggal
-            )
-        select
-        awal,
-        akhir,
-        bulan_minggu,
-        kabupaten,
-        sum(total_konfirm_harian) as total_konfirm_mingguan,
-        sum(total_konfirm_kumulatif) as total_konfirm_mingguan_kumulatif,
-        sum(total_sembuh_harian) as total_sembuh_mingguan,
-        sum(total_sembuh_kumulatif) as total_sembuh_mingguan_kumulatif,
-        sum(total_meninggal_harian) as total_meninggal_mingguan,
-        sum(total_meninggal_kumulatif) as total_meninggal_mingguan_kumulatif,
-        sum(total_test_negatif) as total_test_mingguan_negatif,
-        sum(total_test_negatif_kumulatif) as total_test_negatif_mingguan_kumulatif
-        from cte_list_date_weekly
-        join cte_agg on cte_agg.tanggal = cte_list_date_weekly.tanggal
-        group by bulan_minggu, akhir, awal, kabupaten;
+            ),
+          cte_group_agg as (
+              select
+                  awal,
+                  akhir,
+                  bulan_minggu,
+                  kabupaten,
+                  sum(total_konfirm_harian) as total_konfirm_mingguan,
+                  sum(total_sembuh_harian) as total_sembuh_mingguan,
+                  sum(total_meninggal_harian) as total_meninggal_mingguan,
+                  sum(total_test_negatif) as total_test_mingguan_negatif,
+                  sum(total_test_negatif_kumulatif) as total_test_negatif_mingguan_kumulatif
+              from cte_list_date_weekly
+                       join cte_agg on cte_agg.tanggal = cte_list_date_weekly.tanggal
+              group by bulan_minggu, akhir, awal, kabupaten
+          )
+          select
+              awal,
+              akhir,
+              bulan_minggu,
+              kabupaten,
+              total_konfirm_mingguan,
+              sum(total_konfirm_mingguan) over (partition by kabupaten order by bulan_minggu) as total_konfirm_mingguan_kumulatif,
+              total_sembuh_mingguan,
+              sum(total_sembuh_mingguan) over (partition by kabupaten order by bulan_minggu) as total_sembuh_mingguan_kumulatif,
+              total_meninggal_mingguan,
+              sum(total_meninggal_mingguan) over (partition by kabupaten order by bulan_minggu) as total_meninggal_mingguan_kumulatif,
+              total_test_mingguan_negatif,
+              total_test_negatif_mingguan_kumulatif
+          from cte_group_agg
+          group by awal, akhir, bulan_minggu, kabupaten;
         ");
     }
 }

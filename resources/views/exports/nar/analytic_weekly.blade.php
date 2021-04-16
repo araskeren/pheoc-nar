@@ -29,9 +29,29 @@
     </thead>
     <tbody>
         @foreach($listDate as $date)
-            @if($date->awal >= '2021-01-01')
+            @if($date->awal = '2020-12-20')
+                <tr>
+                    <td></td>
+                    <td>Komulatif 2020</td>
+                    @for($i = 0;$i<count($kabKota);$i++)
+                        @foreach($datas as $data)
+                            @if($kabKota[$i]->name == $data->kabupaten and $data->bulan_minggu == $date->bulan_minggu)
+                                {{--                            <td>{{$data->kabupaten}} - {{$data->bulan_minggu}}</td>--}}
+                                <td>{{$data->total_konfirm_mingguan}}</td>
+                                <td>{{$data->total_konfirm_mingguan_kumulatif}}</td>
+                                <td>{{$data->total_sembuh_mingguan}}</td>
+                                <td>{{$data->total_sembuh_mingguan_kumulatif}}</td>
+                                <td>{{$data->total_meninggal_mingguan}}</td>
+                                <td>{{$data->total_meninggal_mingguan_kumulatif}}</td>
+                                <td>{{$data->total_test_mingguan_negatif}}</td>
+                                <td>{{$data->total_test_negatif_mingguan_kumulatif}}</td>
+                            @endif
+                        @endforeach
+                    @endfor
+                </tr>
+            @elseif($date->awal >= '2021-01-01')
             <tr>
-                <td>{{$date->bulan_minggu}}</td>
+                <td>{{$date->bulan_minggu - 52}}</td>
                 <td>{{\Carbon\Carbon::parse($date->awal)->format("d/m/Y")}} - {{\Carbon\Carbon::parse($date->akhir)->format("d/m/Y")}}</td>
                 @for($i = 0;$i<count($kabKota);$i++)
                     @foreach($datas as $data)
