@@ -40,8 +40,10 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
     {
         return [
             'TANGGAL PELAPORAN',
-            'PROVINSI',
-            'KABUPATEN/KOTA',
+            'Mgg ke-',
+            'Thn',
+            'Provinsi',
+            'Kabupaten',
             'Konfirmasi Harian',
             'Konfirmasi Komulatif',
             'Konfirmasi Komulatif 2021',
@@ -65,6 +67,8 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
         if($data->tanggal >= '2020-12-27'){
             return [
                 Date::stringToExcel($data->tanggal),
+                $data->week,
+                $data->year,
                 $this->provName,
                 $data->kabupaten,
                 $data->total_konfirm_harian,
@@ -123,7 +127,7 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
             where level = 2 and parent_id = " . $provId . "
         ),
         cte_kab_date as (
-            select *
+            select *,week(tanggal)+1 as week,year(tanggal) as year
             from kab
             cross join cte_list_date
         ),
@@ -171,6 +175,8 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
         cte_agg as (
             select kd.name                                             as kabupaten,
                    kd.tanggal,
+                   kd.week,
+                   kd.year,
                    coalesce(total_konfirm_harian, 0)                   as total_konfirm_harian,
                    coalesce(total_sembuh_harian, 0)                    as total_sembuh_harian,
                    coalesce(total_meninggal_harian, 0)                 as total_meninggal_harian,
