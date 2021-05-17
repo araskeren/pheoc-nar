@@ -49,7 +49,8 @@ class DownloadV4 extends Command
             $area = Area::select('id','name')->where(["name"=>$prov,"level"=>1])->first();
             Excel::store(new AnalyticExportV4($area->id,$area->name),$path."/analytic_weekly_v2_".$area->name.".xlsx");
         }else{
-            $area = Area::select('id','name')->where("level",1)->get();
+//            $area = Area::select('id','name')->where("level",1)->get();
+            $area = Area::select('id','name')->where("level",1)->whereIn('name',['JAWA TENGAH','KALIMANTAN TIMUR','KALIMANTAN BARAT','KALIMANTAN TENGAH','JAWA TIMUR','DKI JAKARTA','NUSA TENGGARA TIMUR','SUMATERA BARAT'])->get();
             $this->output->progressStart($area->count());
             foreach($area as $i){
                 Excel::store(new AnalyticExportV4($i->id,$i->name),$path."/analytic_weekly_v2_".$i->name.".xlsx");

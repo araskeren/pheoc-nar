@@ -58,7 +58,8 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
             'Kasus Test Kum',
             'Kasus Neg Harian',
             'Kasus Neg Kum',
-            'Pos Rate (%)'
+            'Pos Rate (%)',
+            'Target Suspek per minggu '
         ];
     }
 
@@ -85,7 +86,8 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
                 $data->total_test_harian_kumulatif,
                 $data->total_test_negatif,
                 $data->total_test_negatif_kumulatif,
-                number_format($data->positivity_rate,2)
+                number_format($data->positivity_rate,2),
+                $data->target_suspek_perminggu
             ];
         }
     }
@@ -172,6 +174,12 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
                      left join cte_konfirmasi_harian kh on kh.tanggal_lapor = kd.tanggal and kh.kabupaten = kd.name
             where kd.tanggal >= '2020-12-27'
         ),
+        cte_penduduk as (
+          select
+            kdc,kabupaten_kota,target_suspek_perminggu
+         from area_penduduk
+         where provinsi = '" . $provName . "'
+        ),
         cte_agg as (
             select kd.name                                             as kabupaten,
                    kd.tanggal,
@@ -192,7 +200,8 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
                    sum(coalesce(total_test_harian, 0))
                        over (partition by kd.name order by kd.tanggal) as total_test_harian_kumulatif,
                    sum(coalesce(jml_pasien_negatif, 0))
-                       over (partition by kd.name order by kd.tanggal) as total_test_negatif_kumulatif
+                       over (partition by kd.name order by kd.tanggal) as total_test_negatif_kumulatif,
+                   cp.target_suspek_perminggu
             from cte_kab_date kd
                      left join cte_konfirmasi_harian kk
                                on kk.tanggal_lapor = kd.tanggal and
@@ -209,6 +218,7 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
                      left join cte_test_harian tk
                                on tk.tgl = kd.tanggal and
                                   tk.faskes_kabnm = kd.name
+                     left join cte_penduduk cp on cp.kabupaten_kota = kd.name
                      left join analytic_patient_nar apn on apn.tgl = kd.tanggal and apn.faskes_kabnm = kd.name
             order by kd.name, kd.tanggal
         )
