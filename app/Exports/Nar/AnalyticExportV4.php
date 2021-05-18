@@ -91,7 +91,7 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
                 number_format($data->positivity_rate,2),
                 number_format($data->positivity_rate_daily,2),
                 $data->target_suspek_perminggu,
-                number_format($data->capaian_target,2)
+                number_format($data->capaian_target,3)
             ];
         }
     }
@@ -232,7 +232,7 @@ class AnalyticExportV4 implements FromCollection,WithTitle,WithMapping,WithHeadi
            total_konfirm_kumulatif - (total_sembuh_kumulatif + total_meninggal_kumulatif) as kasus_aktif,
            (total_konfirm_kumulatif_2021 / (total_konfirm_kumulatif_2021+total_test_negatif_kumulatif)) * 100                    as positivity_rate,
            (total_konfirm_harian / (total_konfirm_harian+total_test_negatif)) * 100                    as positivity_rate_daily,
-           ((total_konfirm_harian + total_test_negatif)/target_suspek_perminggu) * 100                 as capaian_target
+           ((total_konfirm_harian + total_test_negatif)/target_suspek_perminggu)                 as capaian_target
     from cte_agg
     where tanggal >= '2020-12-27';
         ");
