@@ -50,7 +50,7 @@ class DownloadV4 extends Command
             Excel::store(new AnalyticExportV4($area->id,$area->name),$path."/analytic_weekly_v2_".$area->name.".xlsx");
         }else{
 //            $area = Area::select('id','name')->where("level",1)->get();
-            $area = Area::select('id','name')->where("level",1)->whereIn('name',['JAWA TENGAH','KALIMANTAN TIMUR','KALIMANTAN BARAT','KALIMANTAN TENGAH','JAWA TIMUR','DKI JAKARTA','NUSA TENGGARA TIMUR','SUMATERA BARAT'])->get();
+            $area = Area::select('id','name')->where("level",1)->whereIn('name',['SULAWESI BARAT','SULAWESI SELATAN','SULAWESI TENGAH','SULAWESI TENGGARA','SULAWESI UTARA','ACEH','MALUKU','SUMATERA UTARA','MALUKU UTARA','KALIMANTAN UTARA','LAMPUNG','DAERAH ISTIMEWA YOGYAKARTA','GORONTALO','KEPULAUAN RIAU','RIAU','KEPULAUAN BANGKA BELITUNG','SUMATERA SELATAN','BENGKULU','JAMBI','KALIMANTAN SELATAN'])->get();
             $this->output->progressStart($area->count());
             foreach($area as $i){
                 Excel::store(new AnalyticExportV4($i->id,$i->name),$path."/analytic_weekly_v2_".$i->name.".xlsx");
